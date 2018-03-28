@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<script>
+	var ledState = ["off", "ff5000",100,50,"0"];
+	
+	window.onfocus = function() {
+		console.log("focus");
+		loadValuesFromServer();
+	};
+	
+	function getLedStates() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				ledState = JSON.parse(JSON.parse(this.responseText));
+			}
+		};
+		xmlhttp.open("GET", "execs/getLedState.php", true);
+		xmlhttp.send();
+	}
+
+	function setLedStates() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				document.getElementById("response").innerHTML = this.responseText;
+			}
+		};
+		xmlhttp.open("GET", "execs/setLedState.php?q=" + JSON.stringify(ledState), true);
+		xmlhttp.send();
+	}
+	
+	function loadValuesFromServer() {
+		getLedStates();
+		setTimeout(setValues, 500);
+	}
+	
+	function setValues() {
+		if (ledState[0] == "on") {
+			document.getElementById('onOffSwitch').checked = true;
+		} else {
+			document.getElementById('onOffSwitch').checked = false;
+		}
+		document.getElementById("colorPicker").value = "#" + ledState[1];
+		
+		document.getElementById("brLbl").innerHTML = "Brightness: " + ledState[2];
+		document.getElementById("brRange").value = ledState[2];
+		
+		document.getElementById("spLbl").innerHTML = "     Speed: " + ledState[3];
+		document.getElementById("spRange").value = ledState[3];
+		document.getElementById("specialSelect").value = ledState[4];
+	}
+	
+	function switchLED() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("response").innerHTML = this.responseText;
+            }
+        };
+		if (ledState[0] == "on") {
+			ledState[0] = "off";
+			xmlhttp.open("GET", "execs/switchState.php?q=off", true);
+			xmlhttp.send();
+		} else {
+			ledState[0] = "on";
+			xmlhttp.open("GET", "execs/switchState.php?q=on", true);
+			xmlhttp.send();
+		}
+		setLedStates();
+	}
+	
+	function setColor() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("response").innerHTML = this.responseText;
+            }
+        };
+		var col = document.getElementById("colorPicker").value;
+		console.log(col);
+		document.getElementById("specialSelect").value = "0";
+		ledState[4] = "0";
+		ledState[1] = col.slice(1);
+		setLedStates();
+		var cmd = "execs/switchColor.php?q=" + col.slice(1);
+		xmlhttp.open("GET", cmd, true);
+		xmlhttp.send();
+	}
+	
+	function setBrightness() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("response").innerHTML = this.responseText;
+            }
+        };
+		var br = document.getElementById("brRange").value
+		console.log(br);
+		ledState[2] = br;
+		document.getElementById("brLbl").innerHTML = "Brightness: " + br;
+		setLedStates();
+		var cmd = "execs/switchBrightness.php?q=" + br;
+		xmlhttp.open("GET", cmd, true);
+		xmlhttp.send();
+	}
+	
+	function setSpeed() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("response").innerHTML = this.responseText;
+            }
+        };
+		var sp = document.getElementById("spRange").value
+		console.log(sp);
+		ledState[3] = sp;
+		document.getElementById("spLbl").innerHTML = "     Speed: " + sp;
+		setLedStates();
+		var cmd = "execs/switchSpeed.php?q=" + sp;
+		xmlhttp.open("GET", cmd, true);
+		xmlhttp.send();
+	}
+	
+	function setSpecial() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("response").innerHTML = this.responseText;
+            }
+        };
+		var sp = document.getElementById("specialSelect").value;
+		ledState[4] = sp;
+		setLedStates();
+		if (sp == "0") {
+			setColor();
+		} else {
+			var cmd = "execs/switchSpecial.php?q=" + sp;
+			xmlhttp.open("GET", cmd, true);
+			xmlhttp.send();
+		}
+		
+	}
+</script>
+<link rel="stylesheet" type="text/css" href="style.css">
+<body onload="loadValuesFromServer();">
+<div class="wrapper">
+
+<h1>LED Control:</h1>
+
+<label class="switch">
+  <input type="checkbox" id="onOffSwitch" onclick="switchLED()">
+  <span class="slider round"></span>
+</label>
+
+<div class="container">
+	<input type="color" id="colorPicker" oninput="setColor()"  value="#ff5000"/>
+	<div class="centered">Set Color</div>
+</div>
+
+<div class="slidecontainer">
+		<p id="brLbl">Brightness: X</p>
+		<input type="range" id="brRange" min="0" max="100" value="100" onchange="setBrightness()"  class="rangeSlider">
+		<p id="spLbl">Speed: X</p>
+		<input type="range" min="0" max="100" value="50" onchange="setSpeed()" class="rangeSlider" id="spRange">
+</div>
+<select class="selectBox" id="specialSelect" onchange="setSpecial()">
+	<option value="0">static custom color</option>
+	<option value="9c">white strobe flash</option>
+	<option value="9b">purple strobe flash</option>
+	<option value="9a">cyan strobe flash</option>
+	<option value="99">yellow strobe flash</option>
+	<option value="98">blue strobe flash</option>
+	<option value="97">green strobe flash</option>
+	<option value="96">red strobe flash</option>
+	<option value="95">7 color strobe flash</option>
+	<option value="94">green blue cross fade</option>
+	<option value="93">red blue cross fade</option>
+	<option value="92">red green cross fade</option>
+	<option value="91">white gradual change</option>
+	<option value="90">purple gradual change</option>
+	<option value="8f">cyan gradual change</option>
+	<option value="8e">yellow gradual change</option>
+	<option value="8d">blue gradual change</option>
+	<option value="8c">green gradual change</option>
+	<option value="8b">red gradual change</option>
+	<option value="8a">7 color cross fade</option>
+	<option value="89">3 color cross fade</option>
+	<option value="88">7 color jumping change</option>
+	<option value="87">static white</option>
+	<option value="85">static purple</option>
+	<option value="84">static yellow</option>
+	<option value="83">static cyan</option>
+	<option value="82">static green</option>
+	<option value="81">static blue</option>
+	<option value="80">static Red</option>
+</select>
+
+<p>Error Out: <span id="response"></span></p>
+</div>
+
+</body>
+</html>
