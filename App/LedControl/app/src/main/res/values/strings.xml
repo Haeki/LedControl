@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">LedControl</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="settingsLabel">Settings</string>
+    <string name="backButtonDescription">Back Button</string>
+    <string name="appwidget_text">TestWidget</string>
+    <string name="add_widget">Add widget</string>
+</resources>
