@@ -7,4 +7,8 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="IP des Raspberry Pi" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key ="widgetLedState"
+        android:singleLine="true"/>
 </PreferenceScreen>
